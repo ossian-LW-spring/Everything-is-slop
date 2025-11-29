@@ -10,14 +10,6 @@ interface ThesisSelectionProps {
 }
 
 const ThesisSelection: React.FC<ThesisSelectionProps> = ({ onSelect, hardModeUnlocked }) => {
-  // Filter out options that require unlock if not yet unlocked
-  const visibleOptions = THESIS_OPTIONS.filter(option => {
-    if (option.requiresUnlock && !hardModeUnlocked) {
-      return false;
-    }
-    return true;
-  });
-
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col items-center gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="text-center space-y-2">
@@ -30,15 +22,34 @@ const ThesisSelection: React.FC<ThesisSelectionProps> = ({ onSelect, hardModeUnl
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-        {visibleOptions.map((option) => (
+        {THESIS_OPTIONS.map((option) => {
+            const isLocked = option.requiresUnlock && !hardModeUnlocked;
+            
+            return (
             <button
               key={option.id}
-              onClick={() => onSelect(option)}
-              className="group relative flex flex-col justify-between min-h-[200px] bg-slate-900 border border-green-900 p-6 text-left transition-all hover:border-green-500 hover:bg-slate-800 hover:-translate-y-2"
+              onClick={() => !isLocked && onSelect(option)}
+              disabled={isLocked}
+              className={`
+                group relative flex flex-col justify-between min-h-[200px] border p-6 text-left transition-all
+                ${isLocked 
+                    ? 'bg-slate-950 border-slate-800 opacity-60 cursor-not-allowed' 
+                    : 'bg-slate-900 border-green-900 hover:border-green-500 hover:bg-slate-800 hover:-translate-y-2 cursor-pointer'
+                }
+              `}
             >
+              {isLocked && (
+                  <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/60 backdrop-blur-[1px] rounded-sm">
+                      <Lock className="text-slate-500 mb-2" size={32} />
+                      <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-widest">
+                          Clear Game to Unlock
+                      </span>
+                  </div>
+              )}
+
               <div>
                 <div className="flex justify-between items-start mb-4">
-                    <div className="text-green-700 group-hover:text-green-400 transition-colors">
+                    <div className={`${isLocked ? 'text-slate-700' : 'text-green-700 group-hover:text-green-400'} transition-colors`}>
                         <ScrollText size={32} />
                     </div>
                     {/* Badges */}
@@ -48,15 +59,16 @@ const ThesisSelection: React.FC<ThesisSelectionProps> = ({ onSelect, hardModeUnl
                             ${option.difficulty === 'EASY' ? 'bg-blue-900 text-blue-200' : ''}
                             ${option.difficulty === 'NORMAL' ? 'bg-green-900 text-green-200' : ''}
                             ${option.difficulty === 'HARD' ? 'bg-red-900 text-red-200' : ''}
+                            ${isLocked ? '!bg-slate-800 !text-slate-500' : ''}
                         `}>
                             {option.difficulty}
                         </span>
-                        {option.cloutMultiplier !== 1 && (
+                        {!isLocked && option.cloutMultiplier !== 1 && (
                             <span className={`text-[10px] font-bold px-2 py-1 rounded ${option.cloutMultiplier > 1 ? 'bg-yellow-900 text-yellow-200' : 'bg-orange-900 text-orange-200'}`}>
                                 x{option.cloutMultiplier} CLOUT
                             </span>
                         )}
-                         {option.sanityPenalty > 1 && (
+                         {!isLocked && option.sanityPenalty > 1 && (
                             <span className="text-[10px] font-bold px-2 py-1 rounded bg-red-950 text-red-400 border border-red-900">
                                 x{option.sanityPenalty} DRAIN
                             </span>
@@ -64,24 +76,28 @@ const ThesisSelection: React.FC<ThesisSelectionProps> = ({ onSelect, hardModeUnl
                     </div>
                 </div>
 
-                <h3 className="text-lg font-bold mb-2 font-mono text-slate-200 group-hover:text-white">
+                <h3 className={`text-lg font-bold mb-2 font-mono ${isLocked ? 'text-slate-600' : 'text-slate-200 group-hover:text-white'}`}>
                   {option.label}
                 </h3>
-                <p className="text-xs font-mono leading-relaxed text-slate-500 group-hover:text-slate-300">
+                <p className={`text-xs font-mono leading-relaxed ${isLocked ? 'text-slate-700' : 'text-slate-500 group-hover:text-slate-300'}`}>
                   {option.description}
                 </p>
               </div>
               
-              <div className="mt-6 flex items-center text-xs font-bold text-green-800 group-hover:text-green-400 uppercase tracking-widest">
-                  <span>Initialize</span>
-                  <ArrowRight size={14} className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
+              {!isLocked && (
+                <div className="mt-6 flex items-center text-xs font-bold text-green-800 group-hover:text-green-400 uppercase tracking-widest">
+                    <span>Initialize</span>
+                    <ArrowRight size={14} className="ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
+              )}
 
               {/* Scanline hover effect */}
-              <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity" />
+              {!isLocked && (
+                 <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity" />
+              )}
             </button>
           )
-        )}
+        })}
       </div>
 
        {!hardModeUnlocked && (

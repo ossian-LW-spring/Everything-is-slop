@@ -184,6 +184,7 @@ const App: React.FC = () => {
         setGameState('VICTORY');
         // Unlock hard mode
         localStorage.setItem('slop_game_won', 'true');
+        setHardModeUnlocked(true);
         addLog('DAEMON', 'Simulation complete. You have survived the Slop.');
         addLog('SYSTEM', 'Integrity Verified. Welcome to the New World.');
     }
